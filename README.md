@@ -1,78 +1,38 @@
-# Shopify App Template - Extension only
+## 🧩 Flash Deal Product (Shopify Theme App Extension)
 
-This is a template for building an [extension-only Shopify app](https://shopify.dev/docs/apps/build/app-extensions/build-extension-only-app). It contains the basics for building a Shopify app that uses only app extensions.
+This Shopify theme extension renders a "deal of the day" section with customizable visuals and interactive behavior.
 
-This template doesn't include a server or the ability to embed a page in the Shopify Admin. If you want either of these capabilities, choose the [Remix app template](https://github.com/Shopify/shopify-app-template-remix) instead.
+### 🎯 Features
 
-Whether you choose to use this template or another one, you can use your preferred package manager and the Shopify CLI with [these steps](#installing-the-template).
+- Displays a selected **product** with:
+  - Image, title, and price
+  - "Add to Cart" button with custom JS handling (`/cart/add.js`)
+  - Optional background image (`discount_bg`) with adjustable **opacity**
+  - Custom **metafield** `discount_note` shown as rich text
+- Clicking the discount note **copies** its contents to clipboard
+- Automatically updates the **mini-cart bubble count** after adding to cart
+- Uses custom **Tailwind CSS** styling via `tailwind.css` asset
 
-## Benefits
+### ⚙️ Section Settings
 
-Shopify apps are built on a variety of Shopify tools to create a great merchant experience. The [create an app](https://shopify.dev/docs/apps/getting-started/create) tutorial in our developer documentation will guide you through creating a Shopify app.
+| Setting ID              | Type            | Description                                 |
+|-------------------------|-----------------|---------------------------------------------|
+| `product`               | `product`       | Choose the product to promote               |
+| `discount_bg`           | `image_picker`  | Optional background image                   |
+| `discount_bg_opacity`   | `range`         | Background overlay opacity (0–100)          |
 
-This app template does little more than install the CLI and scaffold a repository.
+### 📦 Requirements
 
-## Getting started
+- Metafield `product.metafields.custom.discount_note` (type: `rich_text`)
+- Tailwind CSS must be compiled into `assets/tailwind.css`
+- Cart icon element with id `#cart-icon-bubble` must exist in theme layout
 
-### Requirements
+### 📜 Example Liquid Usage
 
-1. You must [download and install Node.js](https://nodejs.org/en/download/) if you don't already have it.
-1. You must [create a Shopify partner account](https://partners.shopify.com/signup) if you don’t have one.
-1. You must create a store for testing if you don't have one, either a [development store](https://help.shopify.com/en/partners/dashboard/development-stores#create-a-development-store) or a [Shopify Plus sandbox store](https://help.shopify.com/en/partners/dashboard/managing-stores/plus-sandbox-store).
+The section renders conditionally if a product is selected, and the JS handles:
+- Copying text on click
+- Adding to cart via fetch
+- Updating the mini-cart bubble (even if it doesn't yet exist in DOM)
 
-### Installing the template
+> All JavaScript is inline within the section for simplicity.
 
-This template can be installed using your preferred package manager:
-
-Using yarn:
-
-```shell
-yarn create @shopify/app
-```
-
-Using npm:
-
-```shell
-npm init @shopify/app@latest
-```
-
-Using pnpm:
-
-```shell
-pnpm create @shopify/app@latest
-```
-
-This will clone the template and install the required dependencies.
-
-#### Local Development
-
-[The Shopify CLI](https://shopify.dev/docs/apps/tools/cli) connects to an app in your Partners dashboard. It provides environment variables and runs commands in parallel.
-
-You can develop locally using your preferred package manager. Run one of the following commands from the root of your app.
-
-Using yarn:
-
-```shell
-yarn dev
-```
-
-Using npm:
-
-```shell
-npm run dev
-```
-
-Using pnpm:
-
-```shell
-pnpm run dev
-```
-
-Open the URL generated in your console. Once you grant permission to the app, you can start development (such as generating extensions).
-
-## Developer resources
-
-- [Introduction to Shopify apps](https://shopify.dev/docs/apps/getting-started)
-- [App extensions](https://shopify.dev/docs/apps/build/app-extensions)
-- [Extension only apps](https://shopify.dev/docs/apps/build/app-extensions/build-extension-only-app)
-- [Shopify CLI](https://shopify.dev/docs/apps/tools/cli)
