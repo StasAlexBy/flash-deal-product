@@ -1,0 +1,155 @@
+{{ 'tailwind.css' | asset_url | stylesheet_tag }}
+
+{% assign product = all_products[block.settings.product] %}
+{% assign discount_bg = block.settings.discount_bg %}
+
+{% if product %}
+    <div class="flex flex-col md:flex-row py-5 md:py-10">
+        <div class="text-center">
+            <a href="{{ product.url }}">
+                {{ product.featured_image | image_url: width: 300 | image_tag: alt: product.title }}
+                <h4>{{ product.title }}</h4>
+            </a>
+            <p>{{ product.price | money }}</p>
+            <form class="js-custom-add-to-cart-form flex justify-center">
+                <input type="hidden" name="id" value="{{ product.variants.first.id }}">
+                <button
+                        type="submit"
+                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded w-full max-w-80"
+                >
+                    Add to Cart
+                </button>
+            </form>
+        </div>
+
+        {% if discount_bg != blank %}
+            <div class="flex-1 relative flex items-center justify-center">
+                {{ discount_bg | image_url: width: 300 | image_tag: alt: product.title, class: 'w-full h-full absolute object-fill' }}
+                <div class="absolute inset-0 bg-black opacity-{{ block.settings.discount_bg_opacity }} z-10 !block"></div>
+        {% endif %}
+                {% assign discount_note = product.metafields.custom.discount_note %}
+        {% if discount_note != blank %}
+            <div class="z-10 copy-code-area relative max-w-[50%] text-white text-center [&_h3]:text-5xl [&_h3]:cursor-pointer [&_h3]:my-3 text-3xl font-semibold [&_h1]:text-white [&_h2]:text-white [&_h3]:text-white">
+                 {{ discount_note | metafield_tag }}
+            </div>
+        {% endif %}
+        {% if discount_bg != blank %}
+            </div>
+        {% endif %}
+    </div>
+{% endif %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.copy-code-area h3').forEach((el) => {
+            el.style.cursor = 'pointer';
+            el.addEventListener('click', () => {
+                const text = el.textContent.trim();
+                navigator.clipboard.writeText(text).then(() => {
+                    el.innerText = '✅ Copied';
+                    setTimeout(() => (el.innerText = text), 2000);
+                });
+            });
+        });
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.js-custom-add-to-cart-form').forEach((form) => {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                const formData = new FormData(form);
+                const variantId = formData.get('id');
+                const submitBtn = form.querySelector('button');
+
+                if (!variantId) return;
+
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Adding...';
+
+                fetch('/cart/add.js', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: variantId, quantity: 1 }),
+                })
+                    .then((res) => res.json())
+                    .then(() => {
+                        submitBtn.textContent = '✔️ Added';
+
+                        fetch('/cart.js')
+                            .then((res) => res.json())
+                            .then((cart) => {
+                                const count = cart.item_count;
+                                let bubble = document.querySelector('#cart-icon-bubble .cart-count-bubble');
+
+                                if (!bubble) {
+                                    bubble = document.createElement('div');
+                                    bubble.className = 'cart-count-bubble';
+                                    bubble.innerHTML = `
+                                        <span aria-hidden="true">0</span>
+                                        <span class="visually-hidden">0 items</span>
+                                      `;
+
+                                    const cartIcon = document.querySelector('#cart-icon-bubble');
+                                    if (cartIcon) cartIcon.appendChild(bubble);
+                                }
+
+                                if (bubble) {
+                                    const visible = bubble.querySelector('span[aria-hidden="true"]');
+                                    const hidden = bubble.querySelector('.visually-hidden');
+
+                                    if (visible) visible.textContent = count;
+                                    if (hidden) hidden.textContent = `${count} item${count !== 1 ? 's' : ''}`;
+
+                                    bubble.classList.add('animate-bounce');
+                                    setTimeout(() => bubble.classList.remove('animate-bounce'), 500);
+                                }
+                            });
+
+                        setTimeout(() => {
+                            submitBtn.textContent = 'Add to Cart';
+                            submitBtn.disabled = false;
+                        }, 2000);
+                    })
+                    .catch(() => {
+                        submitBtn.textContent = '❌ Error';
+                        setTimeout(() => {
+                            submitBtn.textContent = 'Add to Cart';
+                            submitBtn.disabled = false;
+                        }, 2000);
+                    });
+            });
+        });
+    });
+</script>
+
+
+{% schema %}
+{
+  "name": "Flash Deal Product",
+  "target": "section",
+  "settings": [
+    {
+      "type": "product",
+      "id": "product",
+      "label": "Select product"
+    },
+    {
+      "type": "image_picker",
+      "id": "discount_bg",
+      "label": "Discount Background"
+    },
+    {
+      "type": "range",
+      "id": "discount_bg_opacity",
+      "label": "Discount Background Opacity",
+      "min": 0,
+      "step": 10,
+      "max": 100,
+      "default": 50
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,21 @@
+<div id="deal-timer" style="background: #fff8f0; padding: 1em; border: 1px solid #eee;">
+  <h2 style="margin: 0 0 0.5em 0;">⚡ {{ section.settings.title }}</h2>
+  <p>Time left: <span id="deal-timer-countdown">10:00</span></p>
+
+  <div style="display: flex; gap: 1em; flex-wrap: wrap;">
+    {% for block in section.blocks %}
+      {% assign product = block.settings.product %}
+      {% if product %}
+        <div style="border: 1px solid #ccc; padding: 0.5em;">
+          <a href="{{ product.url }}">
+            <img src="{{ product.featured_image | img_url: 'medium' }}" style="max-width: 150px;" />
+            <h4>{{ product.title }}</h4>
+          </a>
+          <p>{{ product.price | money }}</p>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>
+
+<script src="{{ 'timer.js' | asset_url }}"></script>
